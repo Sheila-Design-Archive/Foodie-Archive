@@ -75,7 +75,7 @@ body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-weight:4
 }
 
 /* ── TABS ── */
-.tabs{background:var(--white);border-bottom:1px solid var(--line);display:flex;position:sticky;top:71px;z-index:79;overflow-x:auto;scrollbar-width:none;}
+.tabs{background:var(--white);border-bottom:1px solid var(--line);display:flex;position:sticky;z-index:79;overflow-x:auto;scrollbar-width:none;}
 .tabs::-webkit-scrollbar{display:none;}
 .tab{
   flex-shrink:0;padding:11px 18px;border:none;border-bottom:2px solid transparent;
@@ -97,20 +97,16 @@ body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-weight:4
   transition:flex-wrap .2s;
 }
 .fbar::-webkit-scrollbar{display:none;}
-.fbar:first-of-type{top:110px;}
-.fbar:last-of-type{top:148px;}
-#fbar-city{top:110px;}
-#fbar-cuisine{top:148px;}
+#fbar-city{}
+#fbar-cuisine{}
 .fbar.expanded{flex-wrap:wrap;overflow-x:visible;}
 .fbar-hidden{display:none;}
 .fbar.expanded .fbar-hidden{display:flex;}
-.fbar-label{
-  flex-shrink:0;
-  font-size:.6rem;letter-spacing:.12em;
-  color:var(--ink3);
-  display:flex;align-items:center;
-  padding-right:2px;
-  white-space:nowrap;
+
+/* on desktop show all pills */
+@media(min-width:768px){
+  .fbar-hidden{display:flex;}
+  .more-pill{display:none;}
 }
 .more-pill{color:var(--ink3);border-style:dashed;order:999;}
 
@@ -155,6 +151,20 @@ body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-weight:4
 .mitem{break-inside:avoid;margin-bottom:8px;background:var(--white);cursor:pointer;transition:opacity .12s;position:relative;border-radius:10px;overflow:hidden;}
 .mitem:active{opacity:.72;}
 .mitem.hidden{display:none;}
+
+/* ── DESKTOP ── */
+@media(min-width:768px){
+  /* 每列最窄 220px，最宽不限，最多5列最少2列 */
+  .masonry{
+    columns:3;
+    column-gap:10px;
+    padding:12px;
+  }
+  .fbar{padding:10px 24px;gap:8px;}
+  .pill{font-size:.78rem;padding:6px 14px;}
+}
+@media(min-width:1000px){ .masonry{columns:4;} }
+@media(min-width:1280px){ .masonry{columns:5;} }
 
 .mphoto{position:relative;overflow:hidden;width:100%;}
 .mphoto-track{display:flex;height:100%;transition:transform .28s ease;}
@@ -447,8 +457,7 @@ body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-weight:4
 .astats{display:grid;grid-template-columns:1fr 1fr;border-left:1px solid var(--line);border-top:1px solid var(--line);}
 .astat{padding:16px 14px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);background:var(--white);}
 .astat-n{font-family:var(--sans);font-size:1.9rem;font-weight:400;line-height:1;}
-.astat-l{font-size:.54rem;letter-spacing:.11em;color:var(--ink3);display:block;margin-top:3px;}
-.astat-cn{font-family:var(--cn);font-size:.54rem;font-weight:400;color:var(--ink3);display:block;}
+.astat-l{font-family:var(--cn);font-size:.65rem;letter-spacing:.06em;color:var(--ink3);display:block;margin-top:5px;}
 .atext{padding:18px 18px 0;}
 .atext p{font-family:var(--cn);font-size:.7rem;font-weight:400;line-height:2;color:var(--ink2);padding-bottom:14px;border-bottom:1px solid var(--line);margin-bottom:14px;}
 .atext p:last-child{border-bottom:none;}
@@ -545,15 +554,15 @@ body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-weight:4
 
 <!-- HEADER -->
 <header class="hdr">
-  <div class="hdr-row"><span class="hdr-title">社恐干饭人</span><span class="hdr-ig">@s.food.pic</span></div>
+  <div class="hdr-row"><span class="hdr-title">社恐干饭人</span></div>
   <div class="hdr-tagline">一个吃货的食味杂记</div>
 </header>
 
 <!-- TABS -->
 <div class="tabs">
   <button class="tab sel" onclick="switchTab('s-all',this)">食记</button>
-  <button class="tab"     onclick="switchTab('s-picks',this)">★ Top Picks</button>
-  <button class="tab"     onclick="switchTab('s-archive',this)">Archive</button>
+  <button class="tab"     onclick="switchTab('s-picks',this)">★ 精选</button>
+  <button class="tab"     onclick="switchTab('s-archive',this)">足迹</button>
   <button class="tab"     onclick="switchTab('s-about',this)">关于</button>
 </div>
 
@@ -561,30 +570,28 @@ body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-weight:4
 <div class="sec on" id="s-all">
   <!-- City filter -->
   <div class="fbar" id="fbar-city">
-    <span class="fbar-label">城市</span>
-    <button class="pill sel" onclick="setF('city','all',this)">全部</button>
-    <button class="pill" onclick="setF('city','tokyo',this)">🇯🇵 Tokyo</button>
-    <button class="pill" onclick="setF('city','hongkong',this)">🇭🇰 HK</button>
-    <button class="pill" onclick="setF('city','paris',this)">🇫🇷 Paris</button>
+    <button class="pill sel" onclick="setF('city','all',this)">全部城市</button>
+    <button class="pill" onclick="setF('city','tokyo',this)">🇯🇵 东京</button>
+    <button class="pill" onclick="setF('city','hongkong',this)">🇭🇰 香港</button>
+    <button class="pill" onclick="setF('city','paris',this)">🇫🇷 巴黎</button>
     <button class="pill fbar-hidden" onclick="setF('city','shanghai',this)">🇨🇳 上海</button>
-    <button class="pill fbar-hidden" onclick="setF('city','kyoto',this)">🇯🇵 Kyoto</button>
-    <button class="pill fbar-hidden" onclick="setF('city','copenhagen',this)">🇩🇰 CPH</button>
+    <button class="pill fbar-hidden" onclick="setF('city','kyoto',this)">🇯🇵 京都</button>
+    <button class="pill fbar-hidden" onclick="setF('city','copenhagen',this)">🇩🇰 哥本哈根</button>
     <button class="pill fbar-hidden" onclick="setF('city','taipei',this)">🇹🇼 台北</button>
-    <button class="pill fbar-hidden" onclick="setF('city','newyork',this)">🇺🇸 NY</button>
-    <button class="pill fbar-hidden" onclick="setF('city','la',this)">🇺🇸 LA</button>
+    <button class="pill fbar-hidden" onclick="setF('city','newyork',this)">🇺🇸 纽约</button>
+    <button class="pill fbar-hidden" onclick="setF('city','la',this)">🇺🇸 洛杉矶</button>
     <button class="pill more-pill" onclick="showMore('fbar-city',this)">更多 ↓</button>
   </div>
   <!-- Cuisine filter -->
   <div class="fbar" id="fbar-cuisine">
-    <span class="fbar-label">菜系</span>
-    <button class="pill sel" onclick="setF('cuisine','all',this)">全部</button>
+    <button class="pill sel" onclick="setF('cuisine','all',this)">全部菜系</button>
     <button class="pill" onclick="setF('cuisine','fine-dining',this)">Fine Dining</button>
     <button class="pill" onclick="setF('cuisine','omakase',this)">Omakase</button>
     <button class="pill" onclick="setF('cuisine','ramen',this)">拉面</button>
     <button class="pill fbar-hidden" onclick="setF('cuisine','dim-sum',this)">点心</button>
-    <button class="pill fbar-hidden" onclick="setF('cuisine','cafe',this)">咖啡</button>
+    <button class="pill fbar-hidden" onclick="setF('cuisine','cafe',this)">咖啡馆</button>
     <button class="pill fbar-hidden" onclick="setF('cuisine','dessert',this)">甜品</button>
-    <button class="pill fbar-hidden" onclick="setF('cuisine','street',this)">街食</button>
+    <button class="pill fbar-hidden" onclick="setF('cuisine','street',this)">街头小食</button>
     <button class="pill more-pill" onclick="showMore('fbar-cuisine',this)">更多 ↓</button>
   </div>
   <div class="masonry" id="masonry"></div>
@@ -616,7 +623,7 @@ body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-weight:4
 <div class="sec" id="s-archive">
   <div class="archive-coming">
     <div class="archive-icon">📁</div>
-    <div class="archive-title">Archive</div>
+    <div class="archive-title">城市足迹</div>
     <div class="archive-sub">这一页还在构思中<br>敬请期待</div>
   </div>
 </div>
@@ -629,8 +636,8 @@ body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-weight:4
     <div class="about-tag">一个吃货的食味杂记</div>
   </div>
   <div class="astats">
-    <div class="astat"><div class="astat-n">87</div><span class="astat-l">Restaurants<span class="astat-cn">记录餐厅</span></span></div>
-    <div class="astat"><div class="astat-n">12</div><span class="astat-l">Cities<span class="astat-cn">足迹城市</span></span></div>
+    <div class="astat"><div class="astat-n">87</div><span class="astat-l">家餐厅</span></div>
+    <div class="astat"><div class="astat-n">12</div><span class="astat-l">座城市</span></div>
   </div>
   <div class="atext">
     <p>这不是美食评分网站。这里没有广告，没有赞助。</p>
@@ -748,7 +755,7 @@ body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-weight:4
       <span class="ov-location-pin">📍</span>
       <div class="ov-location-text">
         <div class="ov-location-name" id="ov-loc-name"></div>
-        <div class="ov-location-hint">在 Google Maps 中查看 ↗</div>
+        <div class="ov-location-hint">在 Google Maps 查看 ↗</div>
       </div>
     </a>
     <!-- must order -->
@@ -999,7 +1006,7 @@ function buildMasonry(items){
 
     const dotsHtml = photoCount>1
       ? `<div class="mdots">${Array(photoCount).fill(0).map((_,i)=>`<div class="mdot${i===0?' on':''}"></div>`).join('')}</div>`:'';
-    const pickBadge = d.pick?`<div class="mbadge-pick">★ Pick</div>`:'';
+    const pickBadge = d.pick?`<div class="mbadge-pick">★ 精选</div>`:'';
     const arrows = photoCount>1
       ?`<button class="marr marr-l" onclick="event.stopPropagation();mSlide('${d.id}',-1)">‹</button><button class="marr marr-r" onclick="event.stopPropagation();mSlide('${d.id}',1)">›</button>`:'';
     const mustHtml = d.must&&d.must.length
@@ -1141,7 +1148,7 @@ function buildCityPage(){
   document.getElementById('city-stats').innerHTML=`
     <div class="city-stat"><div class="city-stat-n">${totalRestos}</div><span class="city-stat-l">餐厅</span></div>
     <div class="city-stat"><div class="city-stat-n">${totalCities}</div><span class="city-stat-l">城市</span></div>
-    <div class="city-stat"><div class="city-stat-n">${totalPicks}</div><span class="city-stat-l">Top Picks</span></div>`;
+    <div class="city-stat"><div class="city-stat-n">${totalPicks}</div><span class="city-stat-l">精选</span></div>`;
 
   const maxCount=Math.max(...CITIES.map(c=>DATA.filter(d=>d.city===c.id).length));
   const grid=document.getElementById('city-grid');
@@ -1222,7 +1229,7 @@ function openCityOv(cityId){
           </div>
         </div>
         <div class="mbadge-date">${d.meta.split('·').pop().trim()}</div>
-        ${d.pick?'<div class="mbadge-pick">★ Pick</div>':''}
+        ${d.pick?'<div class="mbadge-pick">★ 精选</div>':''}
       </div>
       <div class="mtext">
         <div class="mtop"><div class="mname">${d.name}</div></div>
@@ -1372,6 +1379,22 @@ function copyCode(){
 /* ── INIT ── */
 buildMasonry(DATA);
 [2025,2024,2023].forEach(yr=>buildNrow(yr));
+
+// ── DYNAMIC STICKY POSITIONS ──
+function updateStickyPositions(){
+  const hdr = document.querySelector('.hdr');
+  const tabs = document.querySelector('.tabs');
+  const fbarCity = document.getElementById('fbar-city');
+  const fbarCuisine = document.getElementById('fbar-cuisine');
+  if(!hdr||!tabs) return;
+  const hdrH = hdr.offsetHeight;
+  const tabsH = tabs.offsetHeight;
+  tabs.style.top = hdrH + 'px';
+  if(fbarCity)    fbarCity.style.top    = (hdrH + tabsH) + 'px';
+  if(fbarCuisine) fbarCuisine.style.top = (hdrH + tabsH + fbarCity.offsetHeight) + 'px';
+}
+updateStickyPositions();
+window.addEventListener('resize', updateStickyPositions);
 </script>
 </body>
 </html>
