@@ -1,0 +1,1377 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>社恐干饭人</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400&family=Noto+Serif+SC:wght@300;400&display=swap');
+:root{
+  /* PingFang SC first — handles CJK+Latin with consistent weights on iOS/macOS
+     Noto Sans SC as fallback for Android/Windows — both equally consistent */
+  --sans:"PingFang SC","Noto Sans SC","Hiragino Sans",
+         "Microsoft YaHei UI","Microsoft YaHei",sans-serif;
+  --cn:"PingFang SC","Noto Serif SC","STSong","Source Han Serif SC",serif;
+  --bg:#f4f1eb; --white:#faf8f4;
+  --ink:#1c1a16; --ink2:#4a4540; --ink3:#7a7570;
+  --line:rgba(28,26,22,.12); --line2:rgba(28,26,22,.06);
+  --gold:#8a6c2a; --gold-light:#c49a3a;
+}
+
+/* ── DARK MODE ── */
+@media(prefers-color-scheme:dark){
+  :root{
+    --bg:#141210; --white:#1c1a16;
+    --ink:#ede8dc; --ink2:#b0aaa4; --ink3:#7a7570;
+    --line:rgba(237,232,220,.10); --line2:rgba(237,232,220,.05);
+    --gold:#c49a3a; --gold-light:#e0b85a;
+  }
+  /* pill selected state needs slightly different shade in dark */
+  .pill.sel{background:var(--ink);color:var(--bg);}
+  .yr-btn.sel{background:var(--ink);color:var(--bg);}
+  .tab.sel{color:var(--ink);}
+  /* photo filter — slightly more saturated in dark looks better */
+  .mslide .pb, .ncard-img .pb, .prow-thumb .pb{
+    filter:saturate(90%) sepia(5%);
+  }
+  /* masonry gap in dark */
+  .masonry{background:rgba(237,232,220,.06);}
+  /* overlays */
+  .overlay{background:var(--bg);}
+  .city-ov{background:var(--bg);}
+  /* about hero — invert: dark bg becomes light */
+  .about-hero{background:#0a0908;border-bottom:1px solid var(--line);}
+  /* ncard score badge */
+  /* ovback pill */
+  .ovback{background:var(--bg);}
+  .ovback:active{background:var(--ink);color:var(--bg);}
+  /* save button */
+  /* location block */
+  .ov-location{background:var(--bg);}
+  .ov-location:active,.ov-location.hit{background:var(--ink);color:var(--bg);}
+  /* journal block */
+  /* must pills */
+  .ov-must-pill{background:var(--bg);}
+  /* map link on card */
+  .mmap{background:var(--white);}
+  .mmap:active,.mmap.hit{background:var(--ink);color:var(--bg);}
+  /* pills */
+  .pill{background:var(--white);}
+  .pill.sel:active{background:#ccc8c0;color:var(--bg);}
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html{font-size:16px;}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-weight:400;overflow-x:hidden;}
+
+/* ── HEADER ── */
+.hdr{background:var(--white);border-bottom:1px solid var(--line);padding:50px 18px 16px;position:sticky;top:0;z-index:80;}
+.hdr-row{display:flex;align-items:baseline;justify-content:space-between;}
+.hdr-title{font-family:var(--sans);font-size:1.05rem;font-weight:400;letter-spacing:.18em;text-transform:uppercase;}
+.hdr-ig{font-size:.6rem;letter-spacing:.18em;color:var(--ink3);}
+.hdr-tagline{
+  font-family:var(--cn);font-weight:400;
+  font-size:.7rem;color:var(--ink3);
+  margin-top:5px;letter-spacing:.02em;
+}
+
+/* ── TABS ── */
+.tabs{background:var(--white);border-bottom:1px solid var(--line);display:flex;position:sticky;top:71px;z-index:79;overflow-x:auto;scrollbar-width:none;}
+.tabs::-webkit-scrollbar{display:none;}
+.tab{
+  flex-shrink:0;padding:11px 18px;border:none;border-bottom:2px solid transparent;
+  background:none;font-family:var(--sans);font-weight:400;font-size:.78rem;
+  letter-spacing:.06em;color:var(--ink3);cursor:pointer;white-space:nowrap;
+  transition:color .15s,background .1s;
+}
+.tab:active{background:rgba(28,26,22,.06);}
+.tab.sel{color:var(--ink);border-bottom-color:var(--ink);}
+
+/* ── FILTER PILLS ── */
+/* ── FILTER BARS ── */
+.fbar{
+  display:flex;gap:6px;padding:9px 12px;
+  overflow-x:auto;scrollbar-width:none;
+  background:var(--bg);border-bottom:1px solid var(--line);
+  position:sticky;z-index:78;
+  flex-wrap:nowrap;
+  transition:flex-wrap .2s;
+}
+.fbar::-webkit-scrollbar{display:none;}
+.fbar:first-of-type{top:110px;}
+.fbar:last-of-type{top:148px;}
+#fbar-city{top:110px;}
+#fbar-cuisine{top:148px;}
+.fbar.expanded{flex-wrap:wrap;overflow-x:visible;}
+.fbar-hidden{display:none;}
+.fbar.expanded .fbar-hidden{display:flex;}
+.fbar-label{
+  flex-shrink:0;
+  font-size:.6rem;letter-spacing:.12em;
+  color:var(--ink3);
+  display:flex;align-items:center;
+  padding-right:2px;
+  white-space:nowrap;
+}
+.more-pill{color:var(--ink3);border-style:dashed;order:999;}
+
+.pill{
+  flex-shrink:0;padding:5px 13px;border-radius:999px;border:1px solid var(--line);
+  background:var(--white);color:var(--ink2);
+  font-family:var(--sans);font-weight:400;font-size:.72rem;letter-spacing:.04em;
+  cursor:pointer;white-space:nowrap;
+  transition:background .12s,color .12s,border-color .12s,transform .08s;
+}
+.pill:active{transform:scale(.94);}
+.pill.sel{background:var(--ink);color:var(--bg);border-color:var(--ink);}
+.pill.sel:active{background:#383430;}
+.more-pill{color:var(--ink3);border-style:dashed;}
+
+/* result count */
+.rcount{padding:6px 12px;font-size:.62rem;letter-spacing:.06em;color:var(--ink3);border-bottom:1px solid var(--line);background:var(--bg);}
+
+/* ── ARCHIVE PLACEHOLDER ── */
+.archive-coming{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  min-height:60vh;gap:12px;padding:40px 20px;
+}
+.archive-icon{font-size:2.5rem;opacity:.3;}
+.archive-title{
+  font-family:var(--sans);font-size:1.1rem;font-weight:400;
+  letter-spacing:.12em;color:var(--ink);
+}
+.archive-sub{
+  font-family:var(--cn);font-size:.75rem;font-weight:400;
+  color:var(--ink3);text-align:center;line-height:1.8;
+}
+
+/* ── SECTIONS ── */
+.sec{display:none;padding-bottom:84px;}
+.sec.on{display:block;}
+
+/* ══════════════════════════════
+   MASONRY
+══════════════════════════════ */
+.masonry{columns:2;column-gap:8px;padding:8px;background:var(--bg);}
+.mitem{break-inside:avoid;margin-bottom:8px;background:var(--white);cursor:pointer;transition:opacity .12s;position:relative;border-radius:10px;overflow:hidden;}
+.mitem:active{opacity:.72;}
+.mitem.hidden{display:none;}
+
+.mphoto{position:relative;overflow:hidden;width:100%;}
+.mphoto-track{display:flex;height:100%;transition:transform .28s ease;}
+.mslide{flex-shrink:0;width:100%;height:100%;}
+.mslide .pb{width:100%;height:100%;display:block;filter:saturate(84%) sepia(5%);}
+
+.mdots{position:absolute;bottom:5px;left:50%;transform:translateX(-50%);display:flex;gap:3px;pointer-events:none;}
+.mdot{width:3.5px;height:3.5px;border-radius:50%;background:rgba(255,255,255,.4);transition:background .18s;}
+.mdot.on{background:rgba(255,255,255,.9);}
+
+.mbadge-date{position:absolute;bottom:7px;left:7px;background:rgba(20,18,14,.55);color:rgba(250,248,244,.92);font-size:.58rem;letter-spacing:.06em;padding:3px 7px;border-radius:4px;font-family:var(--sans);}
+.mbadge-pick{position:absolute;top:7px;right:7px;background:var(--gold);color:var(--bg);font-size:.58rem;letter-spacing:.06em;padding:3px 7px;border-radius:4px;font-family:var(--sans);}
+
+/* card body — same bg as photo area */
+.mtext{padding:8px 10px 12px;background:var(--white);}
+.mtop{display:flex;justify-content:space-between;align-items:flex-start;gap:4px;margin-bottom:4px;}
+.mname{font-family:var(--sans);font-size:.95rem;font-weight:400;line-height:1.3;flex:1;}
+.mscore{font-family:var(--sans);font-size:.9rem;font-weight:400;color:var(--gold);flex-shrink:0;letter-spacing:.02em;}
+.mmeta{font-size:.72rem;letter-spacing:.03em;color:var(--ink2);margin-bottom:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.mtags{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:6px;}
+.mtag{font-size:.65rem;letter-spacing:.02em;padding:3px 8px;border:1px solid var(--line);color:var(--ink2);border-radius:999px;}
+
+/* ★ must-order dishes */
+.mmust{
+  margin-top:7px;padding-top:7px;border-top:1px solid var(--line2);
+  display:flex;align-items:baseline;gap:5px;flex-wrap:wrap;
+}
+.mmust-label{font-size:.65rem;letter-spacing:.06em;color:var(--ink3);white-space:nowrap;}
+.mmust-dish{font-family:var(--cn);font-size:.72rem;font-weight:400;color:var(--ink2);}
+.mmust-dish+.mmust-dish::before{content:'·';margin-right:3px;color:var(--ink3);}
+
+.mmap{
+  display:flex;align-items:flex-start;gap:5px;
+  margin-top:8px;padding:7px 10px;border-radius:8px;border:1px solid var(--line);
+  font-size:.68rem;letter-spacing:.02em;color:var(--ink2);text-decoration:none;background:var(--white);
+  transition:background .12s,color .12s,border-color .12s;
+  line-height:1.45;
+}
+.mmap:active,.mmap.hit{background:var(--ink);color:var(--bg);border-color:var(--ink);}
+
+.marr{
+  position:absolute;top:50%;transform:translateY(-50%);
+  width:22px;height:22px;border-radius:50%;border:none;
+  background:rgba(250,248,244,.78);color:var(--ink);font-size:.65rem;
+  display:flex;align-items:center;justify-content:center;cursor:pointer;
+  opacity:0;transition:opacity .18s;
+}
+.mphoto:hover .marr,.mphoto:focus-within .marr{opacity:1;}
+.marr-l{left:4px;}.marr-r{right:4px;}
+
+/* ══════════════════════════════
+   TOP PICKS
+══════════════════════════════ */
+.picks-top{padding:20px 18px 16px;border-bottom:1px solid var(--line);background:var(--white);}
+.picks-label{font-size:.56rem;letter-spacing:.22em;color:var(--ink3);margin-bottom:10px;}
+.yr-row{display:flex;border:1px solid var(--line);}
+.yr-btn{
+  flex:1;padding:8px 4px;border:none;border-right:1px solid var(--line);
+  background:none;font-family:var(--sans);font-size:.9rem;color:var(--ink3);
+  cursor:pointer;transition:background .12s,color .12s;
+}
+.yr-btn:last-child{border-right:none;}
+.yr-btn:active{background:rgba(28,26,22,.07);}
+.yr-btn.sel{background:var(--ink);color:var(--bg);}
+.yr-btn.sel:active{background:#383430;}
+
+.picks-yr{border-bottom:1px solid var(--line);}
+
+/* Netflix row */
+.nrow-wrap{padding:14px 0 22px;border-bottom:1px solid var(--line);}
+.nrow-yr-label{
+  font-family:var(--sans);font-size:1.1rem;font-weight:400;
+  color:var(--ink);padding:0 14px 12px;letter-spacing:.06em;
+}
+.nrow-header{display:flex;align-items:baseline;justify-content:space-between;padding:0 14px 12px;}
+.nrow{display:flex;gap:10px;overflow-x:auto;scrollbar-width:none;padding:0 14px 2px;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;}
+.nrow::-webkit-scrollbar{display:none;}
+.ncard{
+  flex-shrink:0;width:148px;background:var(--white);border:1px solid var(--line);
+  cursor:pointer;scroll-snap-align:start;transition:opacity .12s;position:relative;
+  border-radius:8px;overflow:hidden;
+}
+.ncard:active{opacity:.68;}
+.ncard-img{width:100%;aspect-ratio:2/3;overflow:hidden;position:relative;}
+.ncard-img .pb{width:100%;height:100%;filter:saturate(82%) sepia(6%);}
+.ncard-body{padding:8px 9px 10px;}
+.ncard-name{font-family:var(--sans);font-size:.9rem;font-weight:400;line-height:1.2;margin-bottom:3px;}
+.ncard-meta{font-size:.6rem;letter-spacing:.05em;color:var(--ink3);margin-bottom:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.ncard-must{
+  font-family:var(--cn);font-size:.6rem;font-weight:400;
+  color:var(--ink2);line-height:1.5;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
+}
+
+/* ══════════════════════════════
+   CITY MAP
+══════════════════════════════ */
+.city-page{padding-bottom:84px;}
+
+/* hero stat bar */
+.city-stats{
+  display:flex;background:var(--white);border-bottom:1px solid var(--line);
+}
+.city-stat{
+  flex:1;padding:14px 10px;text-align:center;border-right:1px solid var(--line);
+}
+.city-stat:last-child{border-right:none;}
+.city-stat-n{font-family:var(--sans);font-size:1.4rem;font-weight:400;color:var(--ink);line-height:1;}
+.city-stat-l{font-size:.5rem;letter-spacing:.1em;color:var(--ink3);display:block;margin-top:3px;}
+
+/* city cards grid */
+.city-grid{display:flex;flex-direction:column;gap:0;}
+.city-row{
+  display:flex;align-items:stretch;border-bottom:1px solid var(--line);
+  cursor:pointer;background:var(--white);transition:background .12s;
+  position:relative;overflow:hidden;
+}
+.city-row:active{background:var(--bg);}
+.city-row-flag{
+  width:52px;flex-shrink:0;
+  font-size:1.6rem;display:flex;align-items:center;justify-content:center;
+  border-right:1px solid var(--line);
+}
+.city-row-body{flex:1;padding:14px 14px 14px;}
+.city-row-name{font-family:var(--sans);font-size:1.05rem;font-weight:400;line-height:1.2;margin-bottom:3px;}
+.city-row-name span{font-family:var(--cn);font-size:.72rem;font-weight:400;color:var(--ink3);margin-left:6px;}
+.city-row-meta{font-size:.55rem;letter-spacing:.1em;color:var(--ink3);margin-bottom:8px;}
+/* mini restaurant chips */
+.city-row-chips{display:flex;gap:4px;flex-wrap:wrap;}
+.city-chip{
+  font-size:.48rem;letter-spacing:.06em;padding:2px 7px;
+  border:1px solid var(--line);color:var(--ink2);border-radius:999px;
+  white-space:nowrap;
+}
+.city-chip.pick{border-color:var(--gold);color:var(--gold);}
+/* count badge */
+.city-row-count{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:0 16px;border-left:1px solid var(--line);flex-shrink:0;
+  gap:2px;
+}
+.city-count-n{font-family:var(--sans);font-size:1.3rem;color:var(--ink);}
+.city-count-l{font-size:.44rem;letter-spacing:.1em;color:var(--ink3);}
+
+/* bar chart under city */
+.city-bar-wrap{padding:0 14px;margin-top:8px;}
+.city-bar-track{height:2px;background:var(--line);width:100%;border-radius:1px;}
+.city-bar-fill{height:100%;background:var(--gold);border-radius:1px;transition:width .6s ease;}
+
+/* city detail overlay */
+.city-ov{display:none;position:fixed;inset:0;z-index:200;background:var(--bg);overflow-y:auto;}
+.city-ov.on{display:block;}
+.city-ov-bar{
+  position:sticky;top:0;z-index:10;background:var(--white);
+  border-bottom:1px solid var(--line);padding:46px 16px 12px;
+  display:flex;align-items:center;gap:10px;
+}
+.city-ov-back{width:32px;height:32px;border-radius:50%;border:1px solid var(--line);background:var(--bg);color:var(--ink);font-size:.75rem;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background .12s;}
+.city-ov-back:active{background:var(--ink);color:var(--bg);}
+.city-ov-title{font-family:var(--sans);font-size:1rem;}
+.city-ov-hero{
+  background:var(--ink);color:var(--bg);
+  padding:24px 18px 20px;border-bottom:1px solid var(--line);
+}
+.city-ov-flag{font-size:2rem;margin-bottom:6px;}
+.city-ov-name{font-family:var(--sans);font-size:1.6rem;font-weight:400;line-height:1.1;margin-bottom:4px;}
+.city-ov-sub{font-size:.58rem;letter-spacing:.15em;color:rgba(237,232,220,.45);}
+/* cuisine breakdown in city */
+.city-cuisine-row{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:10px 18px;border-bottom:1px solid var(--line);background:var(--white);
+}
+.city-cuisine-name{font-size:.68rem;color:var(--ink2);}
+.city-cuisine-bar-wrap{flex:1;margin:0 12px;height:2px;background:var(--line);}
+.city-cuisine-bar{height:100%;background:var(--gold);}
+.city-cuisine-n{font-family:var(--sans);font-size:.75rem;color:var(--gold);}
+/* restaurants in city */
+.city-resto-list{padding:2px;background:var(--line);}
+
+/* ══════════════════════════════
+   DETAIL OVERLAY — redesigned
+══════════════════════════════ */
+.overlay{display:none;position:fixed;inset:0;z-index:300;background:var(--white);overflow-y:auto;}
+.overlay.on{display:block;}
+
+/* top bar */
+.ovbar{
+  position:sticky;top:0;z-index:10;
+  background:var(--white);border-bottom:1px solid var(--line);
+  padding:46px 16px 12px;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.ovback{
+  /* simple text, no circle */
+  background:none;border:none;
+  color:var(--ink2);font-size:.85rem;
+  font-family:var(--sans);font-weight:400;
+  letter-spacing:.04em;cursor:pointer;
+  padding:4px 0;transition:color .12s;
+}
+.ovback:active{color:var(--ink);}
+
+/* carousel — Instagram tap-zone style, no visible arrows */
+.ovcar{position:relative;overflow:hidden;aspect-ratio:4/3;}
+.ovtrack{display:flex;height:100%;transition:transform .28s ease;}
+.ovdots{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);display:flex;gap:4px;}
+/* invisible tap zones cover left/right half */
+.ovarr{
+  position:absolute;top:0;bottom:0;width:50%;
+  background:transparent;border:none;cursor:pointer;
+  -webkit-tap-highlight-color:transparent;
+}
+.ovarr-l{left:0;}
+.ovarr-r{right:0;}
+
+/* body */
+.ovbody{padding:18px 16px 60px;}
+
+/* name block */
+.ov-name-block{margin-bottom:14px;}
+.ovname{font-family:var(--sans);font-size:1.35rem;font-weight:400;line-height:1.2;letter-spacing:.04em;margin-bottom:3px;}
+.ovname-cn{font-family:var(--cn);font-size:.78rem;font-weight:400;color:var(--ink3);margin-bottom:14px;}
+
+/* tags row */
+.ov-tags-row{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:14px;}
+
+/* location — tappable */
+.ov-location{
+  display:flex;align-items:center;gap:8px;
+  padding:10px 12px;
+  border:1px solid var(--line);background:var(--bg);
+  text-decoration:none;color:var(--ink);
+  margin-bottom:18px;transition:background .12s;
+}
+.ov-location:active,.ov-location.hit{background:var(--ink);color:var(--bg);}
+.ov-location-pin{font-size:.9rem;}
+.ov-location-text{flex:1;}
+.ov-location-name{font-size:.72rem;line-height:1.4;}
+.ov-location-hint{font-size:.52rem;letter-spacing:.08em;color:var(--ink3);margin-top:1px;}
+.ov-location:active .ov-location-hint,.ov-location.hit .ov-location-hint{color:rgba(250,248,244,.6);}
+.ov-location-arrow{font-size:.7rem;color:var(--ink3);}
+
+/* section label */
+.ov-slabel{
+  font-size:.72rem;font-weight:400;
+  letter-spacing:.08em;
+  color:var(--ink);margin-bottom:10px;
+  margin-top:20px;
+}
+
+/* must-order */
+.ov-must-pills{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:18px;}
+.ov-must-pill{
+  font-family:var(--cn);font-size:.7rem;font-weight:400;
+  padding:5px 12px;border:1px solid var(--line);color:var(--ink);
+  border-radius:999px;background:var(--white);
+}
+
+/* vibes — merged moods + keywords */
+.ov-vibes{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:18px;}
+.ov-vibe{
+  font-size:.62rem;padding:4px 11px;
+  background:var(--bg);border:1px solid var(--line);
+  color:var(--ink2);border-radius:999px;
+}
+.ov-vibe.mood{background:var(--white);}
+
+/* footer info */
+.ov-footer{
+  border-top:1px solid var(--line);
+  padding-top:16px;margin-top:4px;
+  display:flex;flex-direction:column;gap:10px;
+}
+.ov-footer-row{display:flex;align-items:baseline;gap:10px;}
+.ov-footer-label{
+  font-size:.65rem;letter-spacing:.08em;
+  color:var(--ink3);width:52px;flex-shrink:0;
+}
+.ov-footer-val{font-size:.78rem;color:var(--ink2);}
+
+/* ── ABOUT ── */
+.about-hero{
+  background:var(--ink);color:var(--bg);
+  padding:44px 20px 40px;
+}
+.about-vol{font-size:.54rem;letter-spacing:.24em;color:rgba(237,232,220,.3);margin-bottom:12px;}
+.about-h{font-family:var(--sans);font-size:1.9rem;font-weight:400;line-height:1.2;margin-bottom:9px;}
+.about-h em{font-style:italic;}
+.about-tag{font-family:var(--cn);font-size:.7rem;font-weight:400;line-height:1.8;color:rgba(237,232,220,.5);}
+.astats{display:grid;grid-template-columns:1fr 1fr;border-left:1px solid var(--line);border-top:1px solid var(--line);}
+.astat{padding:16px 14px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);background:var(--white);}
+.astat-n{font-family:var(--sans);font-size:1.9rem;font-weight:400;line-height:1;}
+.astat-l{font-size:.54rem;letter-spacing:.11em;color:var(--ink3);display:block;margin-top:3px;}
+.astat-cn{font-family:var(--cn);font-size:.54rem;font-weight:400;color:var(--ink3);display:block;}
+.atext{padding:18px 18px 0;}
+.atext p{font-family:var(--cn);font-size:.7rem;font-weight:400;line-height:2;color:var(--ink2);padding-bottom:14px;border-bottom:1px solid var(--line);margin-bottom:14px;}
+.atext p:last-child{border-bottom:none;}
+.aig{margin:18px;padding:4px 15px;display:flex;align-items:center;justify-content:space-between;}
+.aig-lbl{font-size:.78rem;letter-spacing:.04em;color:var(--ink3);}
+.aig-handle{font-family:var(--sans);font-size:.78rem;color:var(--ink);}
+
+/* ── PHOTO PLACEHOLDERS ── */
+.f-sushi  {background:linear-gradient(155deg,#0e1a2a,#1a4060,#3a7080);}
+.f-sushi2 {background:linear-gradient(165deg,#081418,#103040,#206070);}
+.f-pasta  {background:linear-gradient(155deg,#2a1e08,#7a5015,#c89030);}
+.f-pasta2 {background:linear-gradient(165deg,#1a1408,#503510,#906020);}
+.f-coffee {background:linear-gradient(155deg,#1a0e08,#4a2010,#8a4820);}
+.f-coffee2{background:linear-gradient(155deg,#0e0806,#2a1208,#604028);}
+.f-dim    {background:linear-gradient(155deg,#280e0e,#6a1818,#c03030);}
+.f-dim2   {background:linear-gradient(165deg,#180808,#480e0e,#902020);}
+.f-green  {background:linear-gradient(155deg,#0a1a0e,#1a5025,#3a8845);}
+.f-green2 {background:linear-gradient(165deg,#060e06,#103018,#206030);}
+.f-dessert{background:linear-gradient(155deg,#280e22,#702055,#c04888);}
+.f-dessert2{background:linear-gradient(165deg,#180814,#501040,#903878);}
+.f-noodle {background:linear-gradient(155deg,#281e08,#705015,#c09035);}
+.f-ramen  {background:linear-gradient(155deg,#3a1e12,#8a3a22,#d0703a);}
+.f-street {background:linear-gradient(155deg,#1a1008,#504020,#9a8040);}
+.f-light  {background:linear-gradient(155deg,#e8e0d0,#d0c8b0,#b8b0a0);}
+.f-dark   {background:linear-gradient(155deg,#101010,#282828,#484848);}
+.f-warm   {background:linear-gradient(155deg,#301808,#704020,#c07040);}
+/* ── ADMIN ── */
+.admin-trigger{
+  width:40px;height:40px;margin:20px auto 8px;
+  cursor:pointer;border-radius:50%;
+  /* invisible — only visible to those who know */
+  opacity:0;
+}
+.admin-ov{
+  display:none;position:fixed;inset:0;z-index:400;
+  background:var(--bg);overflow-y:auto;
+}
+.admin-ov.on{display:block;}
+.admin-bar{
+  position:sticky;top:0;z-index:10;
+  background:var(--white);border-bottom:1px solid var(--line);
+  padding:46px 16px 12px;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.admin-body{padding:20px 18px 80px;}
+.admin-note{
+  font-size:.68rem;color:var(--ink3);margin-bottom:20px;
+  padding:10px 12px;background:var(--white);border:1px solid var(--line);
+  line-height:1.6;
+}
+.admin-group{margin-bottom:14px;}
+.admin-label{
+  display:block;font-size:.6rem;letter-spacing:.1em;
+  color:var(--ink3);margin-bottom:5px;
+}
+.admin-input{
+  width:100%;padding:9px 12px;
+  border:1px solid var(--line);background:var(--white);
+  font-family:var(--sans);font-size:.78rem;color:var(--ink);
+  font-weight:400;outline:none;border-radius:6px;
+  transition:border-color .15s;
+}
+.admin-input:focus{border-color:var(--ink);}
+.admin-gen-btn{
+  width:100%;padding:12px;margin-top:8px;
+  background:var(--ink);color:var(--bg);
+  border:none;font-family:var(--sans);font-size:.78rem;
+  letter-spacing:.06em;cursor:pointer;border-radius:6px;
+  transition:opacity .15s;
+}
+.admin-gen-btn:active{opacity:.75;}
+.admin-output{margin-top:20px;}
+.admin-output-label{font-size:.6rem;letter-spacing:.08em;color:var(--ink3);margin-bottom:8px;}
+.admin-code{
+  width:100%;padding:12px;
+  border:1px solid var(--line);background:var(--white);
+  font-family:monospace;font-size:.65rem;color:var(--ink);
+  line-height:1.6;resize:none;outline:none;border-radius:6px;
+}
+.admin-copy-btn{
+  margin-top:8px;width:100%;padding:10px;
+  border:1px solid var(--ink);background:none;
+  font-family:var(--sans);font-size:.75rem;
+  color:var(--ink);cursor:pointer;border-radius:6px;
+  transition:all .15s;
+}
+.admin-copy-btn:active{background:var(--ink);color:var(--bg);}
+.admin-copy-ok{
+  display:none;text-align:center;margin-top:8px;
+  font-size:.68rem;color:var(--gold);
+}</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="hdr">
+  <div class="hdr-row"><span class="hdr-title">社恐干饭人</span><span class="hdr-ig">@s.food.pic</span></div>
+  <div class="hdr-tagline">一个吃货的食味杂记</div>
+</header>
+
+<!-- TABS -->
+<div class="tabs">
+  <button class="tab sel" onclick="switchTab('s-all',this)">食记</button>
+  <button class="tab"     onclick="switchTab('s-picks',this)">★ Top Picks</button>
+  <button class="tab"     onclick="switchTab('s-archive',this)">Archive</button>
+  <button class="tab"     onclick="switchTab('s-about',this)">关于</button>
+</div>
+
+<!-- ══ ALL ══ -->
+<div class="sec on" id="s-all">
+  <!-- City filter -->
+  <div class="fbar" id="fbar-city">
+    <span class="fbar-label">城市</span>
+    <button class="pill sel" onclick="setF('city','all',this)">全部</button>
+    <button class="pill" onclick="setF('city','tokyo',this)">🇯🇵 Tokyo</button>
+    <button class="pill" onclick="setF('city','hongkong',this)">🇭🇰 HK</button>
+    <button class="pill" onclick="setF('city','paris',this)">🇫🇷 Paris</button>
+    <button class="pill fbar-hidden" onclick="setF('city','shanghai',this)">🇨🇳 上海</button>
+    <button class="pill fbar-hidden" onclick="setF('city','kyoto',this)">🇯🇵 Kyoto</button>
+    <button class="pill fbar-hidden" onclick="setF('city','copenhagen',this)">🇩🇰 CPH</button>
+    <button class="pill fbar-hidden" onclick="setF('city','taipei',this)">🇹🇼 台北</button>
+    <button class="pill fbar-hidden" onclick="setF('city','newyork',this)">🇺🇸 NY</button>
+    <button class="pill fbar-hidden" onclick="setF('city','la',this)">🇺🇸 LA</button>
+    <button class="pill more-pill" onclick="showMore('fbar-city',this)">更多 ↓</button>
+  </div>
+  <!-- Cuisine filter -->
+  <div class="fbar" id="fbar-cuisine">
+    <span class="fbar-label">菜系</span>
+    <button class="pill sel" onclick="setF('cuisine','all',this)">全部</button>
+    <button class="pill" onclick="setF('cuisine','fine-dining',this)">Fine Dining</button>
+    <button class="pill" onclick="setF('cuisine','omakase',this)">Omakase</button>
+    <button class="pill" onclick="setF('cuisine','ramen',this)">拉面</button>
+    <button class="pill fbar-hidden" onclick="setF('cuisine','dim-sum',this)">点心</button>
+    <button class="pill fbar-hidden" onclick="setF('cuisine','cafe',this)">咖啡</button>
+    <button class="pill fbar-hidden" onclick="setF('cuisine','dessert',this)">甜品</button>
+    <button class="pill fbar-hidden" onclick="setF('cuisine','street',this)">街食</button>
+    <button class="pill more-pill" onclick="showMore('fbar-cuisine',this)">更多 ↓</button>
+  </div>
+  <div class="masonry" id="masonry"></div>
+</div>
+
+<!-- ══ TOP PICKS ══ -->
+<div class="sec" id="s-picks">
+  <div class="picks-yr on" id="py-2025">
+    <div class="nrow-wrap">
+      <div class="nrow-yr-label">2025</div>
+      <div class="nrow" id="nrow-2025"></div>
+    </div>
+  </div>
+  <div class="picks-yr on" id="py-2024">
+    <div class="nrow-wrap">
+      <div class="nrow-yr-label">2024</div>
+      <div class="nrow" id="nrow-2024"></div>
+    </div>
+  </div>
+  <div class="picks-yr on" id="py-2023">
+    <div class="nrow-wrap">
+      <div class="nrow-yr-label">2023</div>
+      <div class="nrow" id="nrow-2023"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ ARCHIVE ══ -->
+<div class="sec" id="s-archive">
+  <div class="archive-coming">
+    <div class="archive-icon">📁</div>
+    <div class="archive-title">Archive</div>
+    <div class="archive-sub">这一页还在构思中<br>敬请期待</div>
+  </div>
+</div>
+
+<!-- ══ ABOUT ══ -->
+<div class="sec" id="s-about">
+  <div class="about-hero">
+    <div class="about-vol">@s.food.pic · 2022–2025</div>
+    <div class="about-h">社恐干饭人</div>
+    <div class="about-tag">一个吃货的食味杂记</div>
+  </div>
+  <div class="astats">
+    <div class="astat"><div class="astat-n">87</div><span class="astat-l">Restaurants<span class="astat-cn">记录餐厅</span></span></div>
+    <div class="astat"><div class="astat-n">12</div><span class="astat-l">Cities<span class="astat-cn">足迹城市</span></span></div>
+  </div>
+  <div class="atext">
+    <p>这不是美食评分网站。这里没有广告，没有赞助。</p>
+    <p>这是 @s.food.pic 的私人味觉档案。每一家餐厅都是一个故事，每一口都是一个坐标。</p>
+    <p>所有照片均来自 Instagram @s.food.pic。</p>
+  </div>
+
+  <!-- hidden admin trigger — tap 5 times to reveal -->
+  <div class="admin-trigger" id="admin-trigger" onclick="adminTap()"></div>
+
+</div>
+
+<!-- ══ ADMIN FORM OVERLAY ══ -->
+<div class="admin-ov" id="admin-ov">
+  <div class="admin-bar">
+    <button class="ovback" onclick="closeAdmin()">← 关闭</button>
+    <span style="font-size:.8rem;font-weight:400;">添加餐厅</span>
+  </div>
+  <div class="admin-body">
+    <div class="admin-note">填写后点「生成代码」，复制代码添加到 DATA 数组。</div>
+
+    <div class="admin-group">
+      <label class="admin-label">餐厅名称 *</label>
+      <input class="admin-input" id="af-name" placeholder="e.g. Sushi Saito" />
+    </div>
+    <div class="admin-group">
+      <label class="admin-label">中文名 / 副标题</label>
+      <input class="admin-input" id="af-cn" placeholder="e.g. 鮨 さいとう" />
+    </div>
+    <div class="admin-group">
+      <label class="admin-label">城市 ID *</label>
+      <select class="admin-input" id="af-city">
+        <option value="tokyo">Tokyo</option>
+        <option value="hongkong">Hong Kong</option>
+        <option value="paris">Paris</option>
+        <option value="shanghai">上海</option>
+        <option value="kyoto">Kyoto</option>
+        <option value="copenhagen">Copenhagen</option>
+        <option value="taipei">台北</option>
+        <option value="newyork">New York</option>
+      </select>
+    </div>
+    <div class="admin-group">
+      <label class="admin-label">菜系标签（空格分隔）*</label>
+      <input class="admin-input" id="af-cuisine" placeholder="e.g. omakase fine-dining" />
+    </div>
+    <div class="admin-group">
+      <label class="admin-label">城市 · 区域 · 月份年份</label>
+      <input class="admin-input" id="af-meta" placeholder="e.g. Tokyo · Azabu-Juban · Feb 2025" />
+    </div>
+    <div class="admin-group">
+      <label class="admin-label">类型标签（逗号分隔）</label>
+      <input class="admin-input" id="af-tags" placeholder="e.g. Omakase, 3★ Michelin" />
+    </div>
+    <div class="admin-group">
+      <label class="admin-label">必点菜（逗号分隔）</label>
+      <input class="admin-input" id="af-must" placeholder="e.g. 大腹金枪鱼, 海胆军舰" />
+    </div>
+    <div class="admin-group">
+      <label class="admin-label">地址</label>
+      <input class="admin-input" id="af-addr" placeholder="e.g. 麻布十番, 港区, Tokyo" />
+    </div>
+    <div class="admin-group">
+      <label class="admin-label">人均消费</label>
+      <input class="admin-input" id="af-price" placeholder="e.g. ¥80,000~" />
+    </div>
+    <div class="admin-group">
+      <label class="admin-label">Google Maps URL</label>
+      <input class="admin-input" id="af-map" placeholder="https://maps.google.com/?q=..." />
+    </div>
+    <div class="admin-group">
+      <label class="admin-label">心情标签（逗号分隔）</label>
+      <input class="admin-input" id="af-moods" placeholder="e.g. 🕯 适合约会, 🍾 人生高光" />
+    </div>
+    <div class="admin-group">
+      <label class="admin-label">Top Pick？</label>
+      <select class="admin-input" id="af-pick">
+        <option value="false">否</option>
+        <option value="true">是</option>
+      </select>
+    </div>
+
+    <button class="admin-gen-btn" onclick="generateCode()">生成代码 →</button>
+
+    <div id="admin-output" class="admin-output" style="display:none;">
+      <div class="admin-output-label">复制以下代码，粘贴到 DATA 数组里：</div>
+      <textarea class="admin-code" id="admin-code" readonly rows="12"></textarea>
+      <button class="admin-copy-btn" onclick="copyCode()">复制代码</button>
+      <div class="admin-copy-ok" id="admin-copy-ok">✓ 已复制</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ DETAIL OVERLAY ══ -->
+<div class="overlay" id="ov">
+  <div class="ovbar">
+    <button class="ovback" onclick="closeOv()">← 返回</button>
+  </div>
+  <div class="ovcar" id="ov-car">
+    <div class="ovtrack" id="ov-track"></div>
+    <button class="ovarr ovarr-l" onclick="ovSlide(-1)"></button>
+    <button class="ovarr ovarr-r" onclick="ovSlide(1)"></button>
+    <div class="ovdots" id="ov-dots"></div>
+  </div>
+  <div class="ovbody">
+    <!-- name -->
+    <div class="ov-name-block">
+      <div class="ovname" id="ov-name"></div>
+      <div class="ovname-cn" id="ov-cn"></div>
+    </div>
+    <!-- tags -->
+    <div class="ov-tags-row" id="ov-tags"></div>
+    <!-- location → Google Maps -->
+    <a class="ov-location" id="ov-location" href="#" target="_blank">
+      <span class="ov-location-pin">📍</span>
+      <div class="ov-location-text">
+        <div class="ov-location-name" id="ov-loc-name"></div>
+        <div class="ov-location-hint">在 Google Maps 中查看 ↗</div>
+      </div>
+    </a>
+    <!-- must order -->
+    <div class="ov-slabel" style="margin-top:0;">必点</div>
+    <div class="ov-must-pills" id="ov-must"></div>
+    <!-- vibes: keywords + moods merged -->
+    <div class="ov-slabel">关键词 · 心情</div>
+    <div class="ov-vibes" id="ov-vibes"></div>
+    <!-- footer: date / price / notes -->
+    <div class="ov-footer" id="ov-footer"></div>
+  </div>
+</div>
+
+<script>
+/* ══════════════════════════════
+   DATA  — added: must (必点菜), price (价格区间)
+══════════════════════════════ */
+const DATA = [
+  {id:'sushi-saito', city:'tokyo', cuisine:'omakase fine-dining', pick:true,
+   name:'Sushi Saito', cn:'鮨 さいとう', score:'9.8',
+   meta:'Tokyo · Azabu-Juban · Feb 2025',
+   price:'¥¥¥¥', tags:['Omakase','3★ Michelin'],
+   must:['大腹金枪鱼','墨鱼','海胆军舰'],
+   excerpt:'安静得可以听见时间的声音。每一片鱼生都是一个完整的句子。',
+   mapUrl:'https://maps.google.com/?q=Sushi+Saito+Azabu+Tokyo',
+   photos:[{c:'f-sushi',r:0.75},{c:'f-sushi2',r:1},{c:'f-dark',r:1.33}],
+   info:[{l:'日期',v:'2025年 2月'},{l:'地点',v:'麻布十番, 港区, Tokyo'},{l:'类型',v:'Omakase · 日本料理'},{l:'人均',v:'¥80,000~'},{l:'预约',v:'需提前数月'}],
+   scores:[{v:'9.8',l:'综合'},{v:'10',l:'食材'},{v:'9.5',l:'体验'}],
+   words:['寂静','Transcendent','仪式感'],
+   review:'安静得可以听见时间的声音。斋藤先生站在柜台另一侧，用三十年的技艺把每一片鱼生变成一个完整的句子。\n\n鲔鱼大腹在舌尖融化的瞬间，我突然理解了什么叫做"克制的奢华"。\n\n那晚的乌贼，透明得像玻璃，咬下去是春天的弹性。',
+   moods:['🕯 适合约会','🍱 独食修行','🍾 人生高光']},
+
+  {id:'ultraviolet', city:'shanghai', cuisine:'fine-dining', pick:true,
+   name:'Ultraviolet', cn:'by Paul Pairet · 上海', score:'9.6',
+   meta:'上海 · Secret Location · Jul 2024',
+   price:'¥¥¥¥', tags:['Multi-sensory','3★ Michelin'],
+   must:['全套 20 道体验菜单'],
+   excerpt:'味道只是借口，体验才是目的地。',
+   mapUrl:'https://maps.google.com/?q=Ultraviolet+Paul+Pairet+Shanghai',
+   photos:[{c:'f-pasta',r:1.33},{c:'f-dark',r:0.75},{c:'f-pasta2',r:1}],
+   info:[{l:'日期',v:'2024年 7月'},{l:'地点',v:'Secret Location, 上海'},{l:'类型',v:'Multi-sensory · French'},{l:'人均',v:'¥5,000+'},{l:'备注',v:'仅10席 · 每晚一桌'}],
+   scores:[{v:'9.6',l:'综合'},{v:'10',l:'概念'},{v:'9.3',l:'味道'}],
+   words:['前卫','不可复制','Synaesthetic'],
+   review:'味道只是一个借口，体验才是目的地。\n\n一张桌子，十个人，一百道灯光，二十道菜。Paul Pairet 把餐厅变成了剧场，把食物变成了演员。\n\n我无法告诉你那里卖的是什么口味，因为那里卖的是时间、空间和那晚坐在那里的你。',
+   moods:['🍾 人生高光','🎉 值得庆祝','💸 花得值得']},
+
+  {id:'noma', city:'copenhagen', cuisine:'fine-dining', pick:false,
+   name:'Noma', cn:'哥本哈根', score:'9.5',
+   meta:'Copenhagen · Refshaleøen · Nov 2024',
+   price:'¥¥¥¥', tags:['New Nordic','2★ Michelin'],
+   must:['发酵鹿肉','玫瑰果甜点','野生蔬菜拼盘'],
+   excerpt:'食材在这里重新学会了如何成为自己。',
+   mapUrl:'https://maps.google.com/?q=Noma+Copenhagen',
+   photos:[{c:'f-green',r:0.75},{c:'f-green2',r:1.33},{c:'f-dark',r:1}],
+   info:[{l:'日期',v:'2024年 11月'},{l:'地点',v:'Refshalevej 96, CPH'},{l:'类型',v:'New Nordic'},{l:'备注',v:'已于2024年底关闭'}],
+   scores:[{v:'9.5',l:'综合'},{v:'9.8',l:'创意'},{v:'9.2',l:'味道'}],
+   words:['Foraged','自然哲学','重新定义'],
+   review:'食材在这里重新学会了如何成为自己。\n\n一朵花不是装饰，是主角。一颗土豆不是配菜，是主题。\n\n原来美味可以是苦的、涩的、带着泥土气息的，原来它可以让你感受到北欧的冬日和春天的第一场雨。',
+   moods:['🌿 轻食减压','🍾 人生高光']},
+
+  {id:'pierre-herme', city:'paris', cuisine:'dessert', pick:true,
+   name:'Pierre Hermé', cn:'巴黎', score:'9.1',
+   meta:'Paris · Saint-Germain · Sep 2024',
+   price:'¥¥', tags:['Pâtisserie','Macaron'],
+   must:['Isphahan 马卡龙','Infiniment Vanille','费南雪'],
+   excerpt:'每颗马卡龙都是一个微型宇宙。',
+   mapUrl:'https://maps.google.com/?q=Pierre+Herme+Paris',
+   photos:[{c:'f-dessert',r:1},{c:'f-dessert2',r:0.75},{c:'f-light',r:1.33}],
+   info:[{l:'日期',v:'2024年 9月'},{l:'地点',v:'72 rue Bonaparte, Paris'},{l:'类型',v:'Pâtisserie'},{l:'人均',v:'€20~50'},{l:'营业',v:'10:00–19:00'}],
+   scores:[{v:'9.1',l:'综合'},{v:'9.5',l:'创意'},{v:'9.0',l:'味道'}],
+   words:['微型宇宙','Isphahan','奢华'],
+   review:'每颗马卡龙都是一个微型宇宙。\n\nIsphahan——玫瑰、荔枝、覆盆子——是我在巴黎最难忘的一口。\n\n不甜腻，不张扬，就像一首写得很好的短诗，你读完了，还在想。',
+   moods:['🎉 值得庆祝','👋 第一次约']},
+
+  {id:'cafe-de-flore', city:'paris', cuisine:'cafe', pick:false,
+   name:'Café de Flore', cn:'巴黎', score:'8.5',
+   meta:'Paris · Saint-Germain · Sep 2024',
+   price:'¥¥', tags:['Café','建于1887'],
+   must:['Café Crème','Croque Monsieur','热巧克力'],
+   excerpt:'坐在这里喝咖啡，就是在喝整个巴黎的下午。',
+   mapUrl:'https://maps.google.com/?q=Cafe+de+Flore+Paris',
+   photos:[{c:'f-coffee',r:1.33},{c:'f-coffee2',r:1},{c:'f-light',r:0.75}],
+   info:[{l:'日期',v:'2024年 9月'},{l:'地点',v:'172 Bd Saint-Germain'},{l:'类型',v:'Café · Brasserie'},{l:'人均',v:'€15~25'},{l:'营业',v:'07:30–01:30'}],
+   scores:[{v:'8.5',l:'综合'},{v:'9.5',l:'氛围'},{v:'7.5',l:'咖啡'}],
+   words:['传奇','波伏瓦','Timeless'],
+   review:'坐在这里喝一杯咖啡，就是在喝整个巴黎的下午。\n\n咖啡本身并不特别出色，但你买到的是一种叫做"传奇"的东西。\n\n沙特和波伏瓦曾在这里改变了世界的思想史。',
+   moods:['📖 带本书去','🕯 适合约会']},
+
+  {id:'tim-ho', city:'hongkong', cuisine:'dim-sum', pick:true,
+   name:'Tim Ho Wan · 添好运', cn:'深水埗', score:'9.0',
+   meta:'Hong Kong · Sham Shui Po · Oct 2024',
+   price:'¥', tags:['Dim Sum','1★ Michelin'],
+   must:['酥皮焗叉烧包','鲜虾饺','萝卜糕'],
+   excerpt:'米其林的灵魂，街边茶楼的价格。',
+   mapUrl:'https://maps.google.com/?q=Tim+Ho+Wan+Sham+Shui+Po',
+   photos:[{c:'f-dim',r:0.75},{c:'f-dim2',r:1.33},{c:'f-dark',r:1}],
+   info:[{l:'日期',v:'2024年 10月'},{l:'地点',v:'深水埗桂林街9-11号'},{l:'类型',v:'广式点心'},{l:'人均',v:'HK$80~120'},{l:'营业',v:'07:00–21:30 · 排队'}],
+   scores:[{v:'9.0',l:'综合'},{v:'9.5',l:'性价比'},{v:'8.8',l:'食物'}],
+   words:['烧包','People\'s Star','童年味'],
+   review:'米其林三星的灵魂，街边茶楼的价格。\n\n外皮酥脆微甜，内里叉烧咸香多汁。\n\n排了四十分钟的队，坐在塑料椅子上喝着菊花茶，这才是真正的香港。',
+   moods:['💸 花得值得','🏠 想家的时候']},
+
+  {id:'ichiran', city:'tokyo', cuisine:'ramen', pick:false,
+   name:'一蘭 Ichiran', cn:'博多 · 中洲川端', score:'8.7',
+   meta:'Fukuoka · 中洲川端 · Aug 2024',
+   price:'¥', tags:['Tonkotsu','Solo Dining'],
+   must:['替玉（加面）','半熟煮玉子','秘制红辣酱'],
+   excerpt:'只剩下你和这碗汤的关系。',
+   mapUrl:'https://maps.google.com/?q=Ichiran+Hakata+Fukuoka',
+   photos:[{c:'f-ramen',r:1},{c:'f-warm',r:0.75},{c:'f-coffee',r:1.33}],
+   info:[{l:'日期',v:'2024年 8月'},{l:'地点',v:'博多区中洲 1-1'},{l:'类型',v:'博多豚骨拉面'},{l:'人均',v:'¥1,200~1,800'},{l:'营业',v:'24時間営業'}],
+   scores:[{v:'8.7',l:'综合'},{v:'9.0',l:'汤底'},{v:'8.5',l:'体验'}],
+   words:['修行','浓郁','Solitude'],
+   review:'一个人吃拉面，是一种修行。\n\n木质隔板把你和世界隔开，只剩下你和这碗汤的关系。福冈总店的汤底比其他分店更浓、更直接。\n\n等待本身也是仪式的一部分。',
+   moods:['🍜 一个人吃','📖 带本书去']},
+
+  {id:'fuunji', city:'tokyo', cuisine:'ramen', pick:false,
+   name:'風雲児 Fuunji', cn:'新宿 · 西新宿', score:'9.0',
+   meta:'Tokyo · Shinjuku · Jun 2024',
+   price:'¥', tags:['Tsukemen','排队必吃'],
+   must:['特製つけ麺（特制沾面）','追加叉烧'],
+   excerpt:'这碗面，是新宿留给我的信件。',
+   mapUrl:'https://maps.google.com/?q=Fuunji+Shinjuku+Tokyo',
+   photos:[{c:'f-noodle',r:1.33},{c:'f-noodle',r:0.75},{c:'f-coffee',r:1}],
+   info:[{l:'日期',v:'2024年 6月'},{l:'地点',v:'渋谷区千駄ヶ谷5丁目'},{l:'类型',v:'沾面 · Tsukemen'},{l:'人均',v:'¥1,200~1,600'},{l:'营业',v:'11:00~ · 周末排队60min+'}],
+   scores:[{v:'9.0',l:'综合'},{v:'9.5',l:'汤底'},{v:'8.5',l:'面条'}],
+   words:['信件','浓厚','值得等'],
+   review:'这碗面，是新宿留给我的信件。\n\n浓厚的鸡白汤沾汁，裹着粗面条，每一口都是认真的。\n\n排了四十分钟的队，没有任何遗憾。',
+   moods:['🍜 一个人吃','📖 带本书去']},
+
+  {id:'arabica', city:'kyoto', cuisine:'cafe', pick:false,
+   name:'% Arabica', cn:'京都 · 东山', score:'8.2',
+   meta:'Kyoto · Higashiyama · Apr 2024',
+   price:'¥', tags:['Specialty Coffee','景观'],
+   must:['Flat White','抹茶拿铁'],
+   excerpt:'咖啡因里藏着京都的清晨。',
+   mapUrl:'https://maps.google.com/?q=Arabica+Higashiyama+Kyoto',
+   photos:[{c:'f-coffee',r:0.75},{c:'f-light',r:1.33},{c:'f-coffee2',r:1}],
+   info:[{l:'日期',v:'2024年 4月'},{l:'地点',v:'東山区星野町87-5'},{l:'类型',v:'Specialty Coffee'},{l:'人均',v:'¥600~900'},{l:'营业',v:'08:00–18:00'}],
+   scores:[{v:'8.2',l:'综合'},{v:'9.0',l:'环境'},{v:'8.0',l:'咖啡'}],
+   words:['清晨','禅意','Minimal'],
+   review:'咖啡因里藏着京都的清晨。\n\n站在东山的石板路上，捧着一杯flat white，远处是八坂塔，近处是穿着和服路过的行人。\n\n% Arabica 把咖啡简化到只剩本质。',
+   moods:['📖 带本书去','🕯 适合约会']},
+
+  {id:'lok-lok', city:'hongkong', cuisine:'street', pick:false,
+   name:'竹签串串 Lok Lok', cn:'铜锣湾 · 深夜', score:'8.3',
+   meta:'Hong Kong · Causeway Bay · Oct 2024',
+   price:'¥', tags:['Street Food','深夜食堂'],
+   must:['鱼蛋串','豆腐皮','牛肚'],
+   excerpt:'凌晨两点，用竹签串起整个夜晚。',
+   mapUrl:'https://maps.google.com/?q=Lok+Lok+Causeway+Bay+Hong+Kong',
+   photos:[{c:'f-street',r:1},{c:'f-warm',r:1.33},{c:'f-dark',r:0.75}],
+   info:[{l:'日期',v:'2024年 10月'},{l:'地点',v:'铜锣湾 Russell St'},{l:'类型',v:'街头小食'},{l:'人均',v:'HK$50~80'},{l:'营业',v:'深夜营业'}],
+   scores:[{v:'8.3',l:'综合'},{v:'9.0',l:'氛围'},{v:'7.8',l:'食物'}],
+   words:['凌晨','烟火气','治愈'],
+   review:'凌晨两点，用竹签串起整个夜晚。\n\n在香港的霓虹灯下，和陌生人并排站在路边，把各种食材投进热汤里。\n\n没有桌子，没有椅子，只有街道、热气和香港特有的那种活着的感觉。',
+   moods:['🌅 凌晨三点','💊 需要被治愈']},
+
+  {id:'sushi-inaba', city:'la', cuisine:'omakase fine-dining', pick:false,
+   name:'Sushi Inaba', cn:'',
+   meta:'Los Angeles · Torrance · Oct 2025',
+   tags:['Omakase'],
+   must:['大腹金枪鱼','海胆军舰','墨鱼'],
+   excerpt:'',
+   mapUrl:'https://maps.google.com/?q=20920+Hawthorne+Blvd+Torrance+CA+90503',
+   photos:[{c:'f-sushi',r:1},{c:'f-sushi2',r:1},{c:'f-dark',r:1}],
+   igPhotos:[
+     'https://www.instagram.com/p/DVBk2nclVtB/',
+     'https://www.instagram.com/p/DVEJuWele_V/',
+     'https://www.instagram.com/p/DVGvDtWlf-J/'
+   ],
+   info:[{l:'日期',v:'2025年 10月'},{l:'地点',v:'20920 Hawthorne Blvd, Torrance, CA 90503'}],
+   scores:[],words:[],review:'',
+   moods:['🕯 适合约会','🍾 人生高光']}
+];
+
+/* ══════════════════════════════
+   CITY DEFINITIONS
+══════════════════════════════ */
+const CITIES = [
+  {id:'tokyo',     flag:'🇯🇵', name:'Tokyo',       cn:'東京',     country:'Japan'},
+  {id:'hongkong',  flag:'🇭🇰', name:'Hong Kong',   cn:'香港',     country:'China SAR'},
+  {id:'paris',     flag:'🇫🇷', name:'Paris',       cn:'巴黎',     country:'France'},
+  {id:'shanghai',  flag:'🇨🇳', name:'上海',        cn:'Shanghai', country:'China'},
+  {id:'kyoto',     flag:'🇯🇵', name:'Kyoto',       cn:'京都',     country:'Japan'},
+  {id:'copenhagen',flag:'🇩🇰', name:'Copenhagen',  cn:'哥本哈根', country:'Denmark'},
+  {id:'la',        flag:'🇺🇸', name:'Los Angeles', cn:'洛杉矶',   country:'USA'},
+];
+
+/* ══════════════════════════════
+   MASONRY BUILD
+══════════════════════════════ */
+const cst = {};
+function getIdx(id){ if(!cst[id]) cst[id]=0; return cst[id]; }
+
+/* ── DATE → ENGLISH ── */
+const MONTHS_ZH = {'1':'Jan','2':'Feb','3':'Mar','4':'Apr','5':'May','6':'Jun',
+                   '7':'Jul','8':'Aug','9':'Sep','10':'Oct','11':'Nov','12':'Dec'};
+function toEnDate(v){
+  if(!v) return '';
+  // already English e.g. "Oct 2025" or "Feb 2025"
+  if(/[A-Za-z]/.test(v)) return v.replace(/(\w+)\s+(\d{4})/,'$1 $2');
+  // Chinese e.g. "2025年 2月" or "2025年10月"
+  const m = v.match(/(\d{4})[年]?\s*(\d{1,2})/);
+  if(m) return (MONTHS_ZH[m[2]]||'') + ' ' + m[1];
+  return v;
+}
+
+function buildMasonry(items){
+  const grid = document.getElementById('masonry');
+  grid.innerHTML='';
+
+  // sort by date newest → oldest
+  const monthMap={
+    '1':1,'2':2,'3':3,'4':4,'5':5,'6':6,
+    '7':7,'8':8,'9':9,'10':10,'11':11,'12':12,
+    'Jan':1,'Feb':2,'Mar':3,'Apr':4,'May':5,'Jun':6,
+    'Jul':7,'Aug':8,'Sep':9,'Oct':10,'Nov':11,'Dec':12
+  };
+  const parseDate=d=>{
+    const info=d.info.find(r=>r.l==='日期');
+    if(!info) return 0;
+    const v=info.v; // e.g. "2025年 2月" or "2024年 11月"
+    const m=v.match(/(\d{4})[年\s]\s*(\d{1,2})/);
+    if(m) return parseInt(m[1])*100+parseInt(m[2]);
+    return 0;
+  };
+  const sorted=[...items].sort((a,b)=>parseDate(b)-parseDate(a));
+  sorted.forEach(d=>{
+    // ── photos: use igPhotos if available, else color blocks ──
+    const igList = d.igPhotos && d.igPhotos.length ? d.igPhotos : [];
+    const photoCount = igList.length || d.photos.length;
+    const first = d.photos[0];
+    const pct = (1/first.r*100).toFixed(2);
+
+    // build slides
+    let slidesHtml;
+    if(igList.length){
+      slidesHtml = igList.map(url=>{
+        // extract shortcode from IG url
+        const sc = url.match(/\/p\/([^/?]+)/)?.[1]||'';
+        const imgUrl = `https://www.instagram.com/p/${sc}/media/?size=l`;
+        return `<div class="mslide"><img src="${imgUrl}" style="width:100%;height:100%;object-fit:cover;" loading="lazy" onerror="this.parentNode.style.background='#2a1e08'"/></div>`;
+      }).join('');
+    } else {
+      slidesHtml = d.photos.map(p=>`<div class="mslide"><div class="pb ${p.c}" style="width:100%;height:100%;"></div></div>`).join('');
+    }
+
+    const dotsHtml = photoCount>1
+      ? `<div class="mdots">${Array(photoCount).fill(0).map((_,i)=>`<div class="mdot${i===0?' on':''}"></div>`).join('')}</div>`:'';
+    const pickBadge = d.pick?`<div class="mbadge-pick">★ Pick</div>`:'';
+    const arrows = photoCount>1
+      ?`<button class="marr marr-l" onclick="event.stopPropagation();mSlide('${d.id}',-1)">‹</button><button class="marr marr-r" onclick="event.stopPropagation();mSlide('${d.id}',1)">›</button>`:'';
+    const mustHtml = d.must&&d.must.length
+      ?`<div class="mmust"><span class="mmust-label">必点</span>${d.must.map(m=>`<span class="mmust-dish">${m}</span>`).join('')}</div>`:'';
+
+    const el = document.createElement('div');
+    el.className='mitem';
+    el.dataset.city=d.city; el.dataset.cuisine=d.cuisine; el.dataset.id=d.id;
+
+    // ── date badge: English format ──
+    const rawDate = (d.info.find(r=>r.l==='日期')||{v:d.meta.split('·').pop().trim()}).v;
+    const dateLabel = toEnDate(rawDate);
+    const locationLine = d.meta.split('·').slice(0,-1).map(s=>s.trim()).join(' · ');
+
+    el.innerHTML=`
+      <div class="mphoto" id="mp-${d.id}" style="padding-bottom:${pct}%;" onclick="openOv('${d.id}')">
+        <div style="position:absolute;inset:0;overflow:hidden;">
+          <div class="mphoto-track" id="mpt-${d.id}" style="height:100%;">${slidesHtml}</div>
+        </div>
+        <div class="mbadge-date">${dateLabel}</div>
+        ${pickBadge}${arrows}${dotsHtml}
+      </div>
+      <div class="mtext" onclick="openOv('${d.id}')">
+        <div class="mtop"><div class="mname">${d.name}</div></div>
+        <div class="mmeta">${locationLine}</div>
+        <div class="mtags">${d.tags.map(t=>`<span class="mtag">${t}</span>`).join('')}</div>
+        ${mustHtml}
+        <a class="mmap" href="${d.mapUrl}" target="_blank" onclick="event.stopPropagation()">📍 ${(d.info.find(r=>r.l==='地点')||{v:d.meta}).v}</a>
+      </div>`;
+    grid.appendChild(el);
+    addSwipe(el.querySelector('.mphoto'), dir=>mSlide(d.id,dir));
+  });
+
+}
+
+function mSlide(id,dir){
+  const track=document.getElementById('mpt-'+id); if(!track) return;
+  const n=track.querySelectorAll('.mslide').length;
+  cst[id]=(((getIdx(id)+dir)%n)+n)%n;
+  track.style.transform=`translateX(-${cst[id]*100}%)`;
+  const ph=document.getElementById('mp-'+id);
+  if(ph){
+    ph.querySelectorAll('.mdot').forEach((d,i)=>d.classList.toggle('on',i===cst[id]));
+    const d=DATA.find(x=>x.id===id);
+    if(d) ph.style.paddingBottom=(1/d.photos[cst[id]%d.photos.length].r*100).toFixed(2)+'%';
+  }
+}
+
+/* ══════════════════════════════
+   FILTER
+══════════════════════════════ */
+let fCity='all', fCuisine='all';
+
+function showMore(barId, btn){
+  const bar = document.getElementById(barId);
+  const isExpanded = bar.classList.toggle('expanded');
+  btn.textContent = isExpanded ? '收起 ↑' : '更多 ↓';
+}
+
+function setF(type, val, btn){
+  if(type==='city') fCity=val;
+  else fCuisine=val;
+  const barId = type==='city' ? 'fbar-city' : 'fbar-cuisine';
+  document.getElementById(barId).querySelectorAll('.pill:not(.more-pill)').forEach(p=>p.classList.remove('sel'));
+  btn.classList.add('sel');
+  applyFilter();
+}
+
+function applyFilter(){
+  const filtered=DATA.filter(d=>{
+    const cm=fCity==='all'||d.city===fCity;
+    const km=fCuisine==='all'||d.cuisine.split(' ').includes(fCuisine);
+    return cm&&km;
+  });
+  buildMasonry(filtered);
+}
+
+/* ══════════════════════════════
+   SWIPE
+══════════════════════════════ */
+function addSwipe(el,cb){
+  let sx=0;
+  el.addEventListener('touchstart',e=>{sx=e.touches[0].clientX;},{passive:true});
+  el.addEventListener('touchend',e=>{const dx=e.changedTouches[0].clientX-sx;if(Math.abs(dx)>36)cb(dx>0?-1:1);},{passive:true});
+}
+
+/* ══════════════════════════════
+   TABS
+══════════════════════════════ */
+function switchTab(id,btn){
+  document.querySelectorAll('.sec').forEach(s=>s.classList.remove('on'));
+  document.getElementById(id).classList.add('on');
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('sel'));
+  btn.classList.add('sel');
+  window.scrollTo({top:0,behavior:'smooth'});
+  if(id==='s-cities') buildCityPage();
+}
+
+/* ══════════════════════════════
+   TOP PICKS
+══════════════════════════════ */
+const YR_PICKS={
+  2025:[{id:'sushi-saito',rank:1},{id:'fuunji',rank:2}],
+  2024:[{id:'ultraviolet',rank:1},{id:'noma',rank:2},{id:'pierre-herme',rank:3},{id:'tim-ho',rank:4},{id:'fuunji',rank:5}],
+  2023:[{id:'ichiran',rank:1},{id:'arabica',rank:2}]
+};
+function buildNrow(yr){
+  const el=document.getElementById('nrow-'+yr); if(!el||el.children.length) return;
+  (YR_PICKS[yr]||[]).forEach(({id})=>{
+    const d=DATA.find(x=>x.id===id); if(!d) return;
+    const mustText=(d.must||[]).slice(0,2).join(' · ');
+    const card=document.createElement('div');
+    card.className='ncard'; card.onclick=()=>openOv(id);
+    card.innerHTML=`
+      <div class="ncard-img">
+        <div class="pb ${d.photos[0].c}" style="width:100%;height:100%;filter:saturate(82%) sepia(6%)"></div>
+      </div>
+      <div class="ncard-body">
+        <div class="ncard-name">${d.name}</div>
+        <div class="ncard-meta">${d.meta.split('·').slice(0,2).join('·').trim()}</div>
+        ${mustText?`<div class="ncard-must">必点 ${mustText}</div>`:''}
+      </div>`;
+    el.appendChild(card);
+  });
+}
+
+/* ══════════════════════════════
+   CITY PAGE
+══════════════════════════════ */
+let cityPageBuilt=false;
+function buildCityPage(){
+  if(cityPageBuilt) return;
+  cityPageBuilt=true;
+
+  // overall stats
+  const totalCities=CITIES.filter(c=>DATA.some(d=>d.city===c.id)).length;
+  const totalRestos=DATA.length;
+  const totalPicks=DATA.filter(d=>d.pick).length;
+  document.getElementById('city-stats').innerHTML=`
+    <div class="city-stat"><div class="city-stat-n">${totalRestos}</div><span class="city-stat-l">餐厅</span></div>
+    <div class="city-stat"><div class="city-stat-n">${totalCities}</div><span class="city-stat-l">城市</span></div>
+    <div class="city-stat"><div class="city-stat-n">${totalPicks}</div><span class="city-stat-l">Top Picks</span></div>`;
+
+  const maxCount=Math.max(...CITIES.map(c=>DATA.filter(d=>d.city===c.id).length));
+  const grid=document.getElementById('city-grid');
+  grid.innerHTML='';
+
+  CITIES.forEach(city=>{
+    const restos=DATA.filter(d=>d.city===city.id);
+    if(!restos.length) return;
+    const picks=restos.filter(d=>d.pick);
+    const barW=Math.round(restos.length/maxCount*100);
+
+    // chip sample: top 3 (picks first)
+    const sorted=[...picks,...restos.filter(d=>!d.pick)].slice(0,4);
+
+    const row=document.createElement('div');
+    row.className='city-row';
+    row.onclick=()=>openCityOv(city.id);
+    row.innerHTML=`
+      <div class="city-row-flag">${city.flag}</div>
+      <div class="city-row-body">
+        <div class="city-row-name">${city.name}<span>${city.cn}</span></div>
+        <div class="city-row-meta">${city.country} · ${restos.length} 家餐厅</div>
+        <div class="city-row-chips">
+          ${sorted.map(d=>`<span class="city-chip${d.pick?' pick':''}">${d.pick?'★ ':''}${d.name}</span>`).join('')}
+          ${restos.length>4?`<span class="city-chip">+${restos.length-4}</span>`:''}
+        </div>
+        <div class="city-bar-wrap">
+          <div class="city-bar-track"><div class="city-bar-fill" style="width:${barW}%"></div></div>
+        </div>
+      </div>
+      <div class="city-row-count">
+        <div class="city-count-n">${restos.length}</div>
+        <div class="city-count-l">家</div>
+      </div>`;
+    grid.appendChild(row);
+  });
+}
+
+/* ══════════════════════════════
+   CITY DETAIL OVERLAY
+══════════════════════════════ */
+function openCityOv(cityId){
+  const city=CITIES.find(c=>c.id===cityId);
+  const restos=DATA.filter(d=>d.city===cityId);
+  if(!city||!restos.length) return;
+
+  document.getElementById('cov-title').textContent=city.name;
+  document.getElementById('cov-flag').textContent=city.flag;
+  document.getElementById('cov-name').textContent=city.name;
+  document.getElementById('cov-sub').textContent=`${city.country} · ${restos.length} 家餐厅`;
+
+  // cuisine breakdown
+  const cuisineMap={};
+  restos.forEach(d=>d.cuisine.split(' ').forEach(c=>{cuisineMap[c]=(cuisineMap[c]||0)+1;}));
+  const cuisineNames={'fine-dining':'Fine Dining','omakase':'Omakase','ramen':'拉面','dim-sum':'点心','cafe':'咖啡','dessert':'甜品','street':'街食'};
+  const maxC=Math.max(...Object.values(cuisineMap));
+  document.getElementById('cov-cuisines').innerHTML=
+    Object.entries(cuisineMap).map(([k,v])=>`
+      <div class="city-cuisine-row">
+        <span class="city-cuisine-name">${cuisineNames[k]||k}</span>
+        <div class="city-cuisine-bar-wrap"><div class="city-cuisine-bar" style="width:${Math.round(v/maxC*100)}%"></div></div>
+        <span class="city-cuisine-n">${v}</span>
+      </div>`).join('');
+
+  // mini cards
+  const list=document.getElementById('cov-restos');
+  list.innerHTML='';
+  restos.forEach(d=>{
+    const pct=(1/d.photos[0].r*100).toFixed(2);
+    const item=document.createElement('div');
+    item.className='mitem'; item.style.marginBottom='2px';
+    item.onclick=()=>openOv(d.id);
+    item.innerHTML=`
+      <div class="mphoto" style="padding-bottom:${pct}%;">
+        <div style="position:absolute;inset:0;overflow:hidden;">
+          <div class="mphoto-track" style="height:100%;">
+            ${d.photos.map(p=>`<div class="mslide"><div class="pb ${p.c}" style="width:100%;height:100%;"></div></div>`).join('')}
+          </div>
+        </div>
+        <div class="mbadge-date">${d.meta.split('·').pop().trim()}</div>
+        ${d.pick?'<div class="mbadge-pick">★ Pick</div>':''}
+      </div>
+      <div class="mtext">
+        <div class="mtop"><div class="mname">${d.name}</div></div>
+        <div class="mmeta">${d.meta}</div>
+        <div class="mtags">${d.tags.map(t=>`<span class="mtag">${t}</span>`).join('')}</div>
+        ${d.must&&d.must.length?`<div class="mmust"><span class="mmust-label">必点</span>${d.must.map(m=>`<span class="mmust-dish">${m}</span>`).join('')}</div>`:''}
+        <a class="mmap" href="${d.mapUrl}" target="_blank" onclick="event.stopPropagation()">📍 ${(d.info.find(r=>r.l==='地点')||{v:d.meta}).v}</a>
+      </div>`;
+    list.appendChild(item);
+  });
+
+  const ov=document.getElementById('city-ov');
+  ov.classList.add('on'); ov.scrollTop=0;
+}
+function closeCityOv(){ document.getElementById('city-ov').classList.remove('on'); }
+
+/* ══════════════════════════════
+   DETAIL OVERLAY
+══════════════════════════════ */
+let ovIdx=0, ovD=null;
+
+function openOv(id){
+  ovD=DATA.find(x=>x.id===id); if(!ovD) return;
+  ovIdx=0;
+
+  // carousel — use igPhotos if available
+  const igList = ovD.igPhotos && ovD.igPhotos.length ? ovD.igPhotos : [];
+  const track=document.getElementById('ov-track');
+  if(igList.length){
+    track.innerHTML=igList.map(url=>{
+      const sc=url.match(/\/p\/([^/?]+)/)?.[1]||'';
+      const imgUrl=`https://www.instagram.com/p/${sc}/media/?size=l`;
+      return `<div class="mslide" style="flex-shrink:0;width:100%;height:100%;"><img src="${imgUrl}" style="width:100%;height:100%;object-fit:cover;" loading="lazy" onerror="this.parentNode.style.background='#2a1e08'"/></div>`;
+    }).join('');
+    document.getElementById('ov-dots').innerHTML=igList.map((_,i)=>`<div class="mdot${i===0?' on':''}"></div>`).join('');
+  } else {
+    track.innerHTML=ovD.photos.map(p=>`<div class="mslide" style="flex-shrink:0;width:100%;height:100%;"><div class="pb ${p.c}" style="width:100%;height:100%;filter:saturate(82%) sepia(5%);"></div></div>`).join('');
+    document.getElementById('ov-dots').innerHTML=ovD.photos.map((_,i)=>`<div class="mdot${i===0?' on':''}"></div>`).join('');
+  }
+  track.style.transform='translateX(0)';
+  addSwipe(document.getElementById('ov-car'),ovSlide);
+
+  // name
+  document.getElementById('ov-name').textContent=ovD.name;
+  document.getElementById('ov-cn').textContent=ovD.cn||'';
+
+  // tags (type chips)
+  document.getElementById('ov-tags').innerHTML=ovD.tags.map(t=>`<span class="mtag">${t}</span>`).join('');
+
+  // location link
+  const locEl=document.getElementById('ov-location');
+  const locName=document.getElementById('ov-loc-name');
+  // extract location from info array
+  const locInfo=ovD.info.find(r=>r.l==='地点');
+  locName.textContent=locInfo?locInfo.v:ovD.meta;
+  locEl.href=ovD.mapUrl;
+
+  // must order
+  document.getElementById('ov-must').innerHTML=
+    (ovD.must||[]).map(m=>`<span class="ov-must-pill">${m}</span>`).join('');
+
+  // vibes: words + moods merged
+  const wordVibes=(ovD.words||[]).map(w=>`<span class="ov-vibe">${w}</span>`);
+  const moodVibes=(ovD.moods||[]).map(m=>`<span class="ov-vibe mood">${m}</span>`);
+  document.getElementById('ov-vibes').innerHTML=[...wordVibes,...moodVibes].join('');
+
+  // footer: date, price, reservation — only relevant fields
+  const footerFields=ovD.info.filter(r=>['日期','人均','预约','备注'].includes(r.l));
+  document.getElementById('ov-footer').innerHTML=
+    footerFields.map(r=>`<div class="ov-footer-row"><span class="ov-footer-label">${r.l}</span><span class="ov-footer-val">${r.v}</span></div>`).join('');
+
+  const ov=document.getElementById('ov'); ov.classList.add('on'); ov.scrollTop=0;
+}
+
+function ovSlide(dir){
+  if(!ovD) return;
+  const igList = ovD.igPhotos && ovD.igPhotos.length ? ovD.igPhotos : ovD.photos;
+  const n=igList.length;
+  ovIdx=(ovIdx+dir+n)%n;
+  document.getElementById('ov-track').style.transform=`translateX(-${ovIdx*100}%)`;
+  document.getElementById('ov-dots').querySelectorAll('.mdot').forEach((d,i)=>d.classList.toggle('on',i===ovIdx));
+}
+function closeOv(){ document.getElementById('ov').classList.remove('on'); }
+
+/* location tap flash */
+document.addEventListener('click',e=>{
+  const a=e.target.closest('.ov-location,.mmap');
+  if(a){a.classList.add('hit');setTimeout(()=>a.classList.remove('hit'),400);}
+});
+
+/* ── ADMIN ── */
+let adminTaps=0, adminTimer=null;
+function adminTap(){
+  adminTaps++;
+  clearTimeout(adminTimer);
+  adminTimer=setTimeout(()=>adminTaps=0, 2000);
+  if(adminTaps>=5){ adminTaps=0; openAdmin(); }
+}
+function openAdmin(){
+  document.getElementById('admin-ov').classList.add('on');
+  document.getElementById('admin-output').style.display='none';
+}
+function closeAdmin(){ document.getElementById('admin-ov').classList.remove('on'); }
+
+function generateCode(){
+  const v=id=>document.getElementById(id).value.trim();
+  const name=v('af-name'); if(!name){ alert('请填写餐厅名称'); return; }
+  const id=name.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+  const tags=v('af-tags').split(',').map(s=>s.trim()).filter(Boolean);
+  const must=v('af-must').split(',').map(s=>s.trim()).filter(Boolean);
+  const moods=v('af-moods').split(',').map(s=>s.trim()).filter(Boolean);
+  const addr=v('af-addr')||v('af-meta');
+  const info=[
+    {l:'日期', v: v('af-meta').split('·').pop().trim()||''},
+    {l:'地点', v: addr},
+    ...(v('af-price')?[{l:'人均', v:v('af-price')}]:[])
+  ];
+  const obj={
+    id, city:v('af-city'), cuisine:v('af-cuisine')||'fine-dining',
+    pick:v('af-pick')==='true',
+    name, cn:v('af-cn')||'',
+    score:'', meta:v('af-meta'),
+    tags, must,
+    excerpt:'',
+    mapUrl:v('af-map')||`https://maps.google.com/?q=${encodeURIComponent(name)}`,
+    photos:[{c:'f-dark',r:1}],
+    info,
+    scores:[], words:[], review:'', moods
+  };
+  const json=JSON.stringify(obj,null,2)
+    .replace(/"([^"]+)":/g,'$1:')   // unquote keys for JS style
+    .replace(/"/g,"'");              // single quotes
+  document.getElementById('admin-code').value=json+',';
+  document.getElementById('admin-output').style.display='block';
+  document.getElementById('admin-copy-ok').style.display='none';
+}
+
+function copyCode(){
+  const ta=document.getElementById('admin-code');
+  ta.select();
+  document.execCommand('copy');
+  const ok=document.getElementById('admin-copy-ok');
+  ok.style.display='block';
+  setTimeout(()=>ok.style.display='none',2000);
+}
+
+/* ── INIT ── */
+buildMasonry(DATA);
+[2025,2024,2023].forEach(yr=>buildNrow(yr));
+</script>
+</body>
+</html>
